@@ -3,5 +3,129 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
+    "angular-http-handler": {
+      "projectType": "library",
+      "root": "projects/angular-http-handler",
+      "sourceRoot": "projects/angular-http-handler/src",
+      "prefix": "lib",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:ng-packagr",
+          "options": {
+            "project": "projects/angular-http-handler/ng-package.json"
+          },
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/angular-http-handler/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/angular-http-handler/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "tsConfig": "projects/angular-http-handler/tsconfig.spec.json",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ]
+          }
+        }
+      }
+    },
+    "http-handler-example": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/http-handler-example",
+      "sourceRoot": "projects/http-handler-example/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/http-handler-example",
+            "index": "projects/http-handler-example/src/index.html",
+            "main": "projects/http-handler-example/src/main.ts",
+            "polyfills": [
+              "zone.js"
+            ],
+            "tsConfig": "projects/http-handler-example/tsconfig.app.json",
+            "assets": [
+              "projects/http-handler-example/src/favicon.ico",
+              "projects/http-handler-example/src/assets"
+            ],
+            "styles": [
+              "projects/http-handler-example/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "500kb",
+                  "maximumError": "1mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all"
+            },
+            "development": {
+              "buildOptimizer": false,
+              "optimization": false,
+              "vendorChunk": true,
+              "extractLicenses": false,
+              "sourceMap": true,
+              "namedChunks": true
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "production": {
+              "browserTarget": "http-handler-example:build:production"
+            },
+            "development": {
+              "browserTarget": "http-handler-example:build:development"
+            }
+          },
+          "defaultConfiguration": "development"
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "http-handler-example:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
+            "tsConfig": "projects/http-handler-example/tsconfig.spec.json",
+            "assets": [
+              "projects/http-handler-example/src/favicon.ico",
+              "projects/http-handler-example/src/assets"
+            ],
+            "styles": [
+              "projects/http-handler-example/src/styles.css"
+            ],
+            "scripts": []
+          }
+        }
+      }
+    }
   }
 }
