@@ -57,7 +57,7 @@ export class AppComponent implements OnInit {
             console.log(error);
         }, 
         2, // OPTIONAL - retry count
-        1000, // OTIONAL - retry delay
+        1000, // OPTIONAL - retry delay
       )
     ).subscribe();
   }
