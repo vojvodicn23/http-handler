@@ -8,11 +8,11 @@ import { handle } from 'angular-http-handler';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
-
-  private apiUrl = 'https://jsonplaceholder.typicode.com/posts';
+  private apiUrl = 'YOUR API URL';
   http = inject(HttpClient);
 
   loading = false;
+  response: any[] = [];
 
   ngOnInit(): void {
     this.http.get<any[]>(this.apiUrl).pipe(
@@ -21,12 +21,14 @@ export class AppComponent implements OnInit {
           this.loading = loading;
           console.log(loading)
         },
-        (reports) => {
-          console.log(reports)
+        (response) => {
+          this.response = response;
+          console.log(response)
         },
-        (e) => console.log(e, 'custom'),
+        (e) => console.log(e, 'custom'), // OPTIONAL - custom error handler
+        2, // OPTIONAL - retry count
+        1000, // OTIONAL - retry delay
       )
     ).subscribe();
-
   }
 }

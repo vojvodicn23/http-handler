@@ -1,9 +1,21 @@
 {
   "name": "angular-http-handler",
   "version": "0.0.1",
+  "description": "This is the http handler utility for Angular http requests",
+  "keywords": ["http", "angular", "loading", "error-handler"],
+  "author": {
+    "name": "Nikola Vojvodic",
+    "url": "https://github.com/vojvodicn23"
+  },
+  "homepage": "https://github.com/vojvodicn23",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vojvodicn23/http-handler"
+  },
   "peerDependencies": {
-    "@angular/common": "^16.2.0",
-    "@angular/core": "^16.2.0"
+    "@angular/common": "^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0",
+    "@angular/core": "^15.0.0 || ^16.0.0 || ^17.0.0 || ^18.0.0"
   },
   "dependencies": {
     "tslib": "^2.3.0"

@@ -7,7 +7,6 @@ export function handle<T>(
     errorHandler?: (error: HttpErrorResponse) => void,
     retryCount: number = 0,
     retryDelay?: number,
-    fallbackValue?: T | (() => T),
   ): (source$: Observable<T>) => Observable<T> {
     return (source$: Observable<T>) =>
       source$.pipe(
@@ -29,14 +28,7 @@ export function handle<T>(
                 errorHandler(error);
             }
 
-            let fallback: T;
-            if (typeof fallbackValue === 'function') {
-              fallback = (fallbackValue as () => T)();
-            } else if (fallbackValue !== undefined) {
-              fallback = fallbackValue;
-            } else {
-              fallback = (Array.isArray([] as unknown as T) ? [] : null) as T;
-            }
+            const fallback = (Array.isArray([] as unknown as T) ? [] : null) as T;
             
             dataSetter(fallback);
             return of(fallback);
