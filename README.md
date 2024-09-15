@@ -45,13 +45,13 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.http.get<any[]>(this.apiUrl).pipe(
       handle(
-        (loading) => {
-          this.loading = loading;
-          console.log(loading);
-        },
         (response) => {
           this.response = response;
           console.log(response);
+        },
+        (loading) => { // OPTIONAL - loading indicator
+          this.loading = loading;
+          console.log(loading);
         },
         (error) => { // OPTIONAL - custom error handler
             console.log(error);
@@ -80,11 +80,11 @@ The handle function manages HTTP requests with loading state, error handling and
 
 Parameters:
 
-- loadingSetter: (loading: boolean) => void
-Function to set the loading state (e.g., this.loading = loading).
-
 - dataSetter: (response: T) => void
 Function to set the data when the request succeeds (e.g., this.data = response).
+
+- loadingSetter?: (loading: boolean) => void
+Function to set the loading state (e.g., this.loading = loading).
 
 - errorHandler?: (error: HttpErrorResponse) => void
 Optional function to handle errors (e.g., console.error(error)).

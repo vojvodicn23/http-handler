@@ -2,15 +2,19 @@ import { HttpErrorResponse } from "@angular/common/http";
 import { catchError, finalize, Observable, of, retry, tap } from "rxjs";
 
 export function handle<T>(
-    loadingSetter: (loading: boolean) => void,
     dataSetter: (response: T) => void,
+    loadingSetter?: (loading: boolean) => void,
     errorHandler?: (error: HttpErrorResponse) => void,
     retryCount: number = 0,
     retryDelay?: number,
   ): (source$: Observable<T>) => Observable<T> {
     return (source$: Observable<T>) =>
       source$.pipe(
-        tap(() => loadingSetter(true)),
+        tap(() => {
+          if(loadingSetter){
+            loadingSetter(true);
+          }
+        }),
         retry({
           count: retryCount,
           delay: retryDelay,
@@ -33,6 +37,10 @@ export function handle<T>(
             dataSetter(fallback);
             return of(fallback);
         }),
-        finalize(() => loadingSetter(false))
+        finalize(() => {
+          if(loadingSetter){
+            loadingSetter(false);
+          }
+        })
     );
   }

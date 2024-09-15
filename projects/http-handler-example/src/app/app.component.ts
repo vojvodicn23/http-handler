@@ -17,13 +17,13 @@ export class AppComponent implements OnInit {
   ngOnInit(): void {
     this.http.get<any[]>(this.apiUrl).pipe(
       handle(
-        (loading) => {
-          this.loading = loading;
-          console.log(loading)
-        },
         (response) => {
           this.response = response;
           console.log(response)
+        },
+        (loading) => { // OPTIONAL - loader indicator
+          this.loading = loading;
+          console.log(loading)
         },
         (e) => console.log(e, 'custom'), // OPTIONAL - custom error handler
         2, // OPTIONAL - retry count
