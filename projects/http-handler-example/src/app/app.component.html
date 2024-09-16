@@ -1,0 +1,6 @@
+<div *ngIf="loading">
+    Loading...
+</div>
+<div *ngIf="!loading">
+    {{response | json}}
+</div>

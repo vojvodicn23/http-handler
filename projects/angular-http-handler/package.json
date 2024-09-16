@@ -1,6 +1,6 @@
 {
   "name": "angular-http-handler",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "This is the http handler utility for Angular http requests",
   "keywords": ["http", "angular", "loading", "error-handler"],
   "author": {

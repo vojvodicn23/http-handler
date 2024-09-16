@@ -53,6 +53,7 @@ export class AppComponent implements OnInit {
           this.loading = loading;
           console.log(loading);
         },
+        [], // OPTIONAL - custom fallback value
         (error) => { // OPTIONAL - custom error handler
             console.log(error);
         }, 
@@ -64,20 +65,10 @@ export class AppComponent implements OnInit {
 }
 ```
 
-## Fallback Response Behavior
-
-The `handle` function guarantees that a fallback response will always be returned in case of an error, based on the type of the response (`T`). 
-
-- **If the expected response is an array type (e.g., `string[]`, `any[]`)**, the fallback will be an empty array (`[]`).
-- **If the expected response is any other type (e.g., `string`, `number`, `object`)**, the fallback will be `null`.
-
-This ensures that the `dataSetter` will always receive a value of type `T` even in the case of an error, simplifying error handling and avoiding undefined values in your application.
-
 
 ## API
 
-The handle function manages HTTP requests with loading state, error handling and retry.
-
+The `handle` function manages HTTP requests with loading state, error handling and retry.
 Parameters:
 
 - dataSetter: (response: T) => void
@@ -85,6 +76,9 @@ Function to set the data when the request succeeds (e.g., this.data = response).
 
 - loadingSetter?: (loading: boolean) => void
 Function to set the loading state (e.g., this.loading = loading).
+
+- fallbackValue?: any
+Value that will be returned in case of error.
 
 - errorHandler?: (error: HttpErrorResponse) => void
 Optional function to handle errors (e.g., console.error(error)).
@@ -97,3 +91,52 @@ Delay between retries in milliseconds.
 
 - Returns
 An Observable<T> that handles the request, error, retry.
+
+
+The `setDefaultErrorHandler` set default error handler for every handler request. In case custom error handler is passed as a parameter to handle function it will overwrite the default one.
+Use it on root component on init method:
+```typescript
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { setDefaultErrorHandler } from 'angular-http-handler';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  ngOnInit(): void {
+    setDefaultErrorHandler((error: HttpErrorResponse) => {
+      console.log('deafult handler', error);
+      customErrorHandlerFuction(error);
+    });
+  }
+}
+```
+
+
+The `defaultRetryCount` and `setDefaultRetryDelay` set default number of retry in case of error and time between the calls. If you pass it as a parameter it will overwrite the default value.
+Use it on root component on init method:
+```typescript
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { setDefaultRetryCount, setDefaultRetryDelay } from 'angular-http-handler';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit {
+  ngOnInit(): void {
+    setDefaultRetryCount(2);
+    setDefaultRetryDelay(500);
+  }
+}
+```
+
+
+## Fallback Response Behavior
+
+The `handle` function returns a fallback response in case you define it as a 3rd parameter. In case you do not define it it will remain undefined and it will not trigger dataSetter function. 
