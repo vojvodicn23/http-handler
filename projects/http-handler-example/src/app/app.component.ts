@@ -1,6 +1,7 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, OnInit } from '@angular/core';
-import { handle, setDefaultErrorHandler, setDefaultRetryCount, setDefaultRetryDelay } from 'angular-http-handler';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { configureHandler, handle, pendingRequestsCount } from 'angular-http-handler';
+import { delay, Subscription } from 'rxjs';
 
 interface Post {
   userId: number;
@@ -14,27 +15,34 @@ interface Post {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+
   private apiUrl = 'https://jsonplaceholder.typicode.com/posts';
   http = inject(HttpClient);
 
   loading = false;
   response: any = null;
 
+  subs = new Subscription;
+
   ngOnInit(): void {
-    setDefaultErrorHandler((error: HttpErrorResponse) => {
-      console.log('deafult handler', error)
+    configureHandler({
+      defaultErrorHandler: (error: HttpErrorResponse) => {
+        console.log('deafult handler', error);
+      },
+      defaultRetryCount: 0,
+      defaultRetryDelay: 0
     });
-    setDefaultRetryCount(0);
-    setDefaultRetryDelay(500);
+    this.subs.add(pendingRequestsCount().subscribe(count => {
+      console.log('Pending request count: ', count);
+    }));
 
     this.http.get<Post[]>(this.apiUrl).pipe(handle(
       (response) => {
         this.response = response;
-        console.log(response)
+        console.log(response);
       },
       (loading) => { // OPTIONAL - loader indicator
-        this.loading = loading;
         console.log(loading)
       },
       [], // OPTIONAL - custom fallback value
@@ -42,5 +50,25 @@ export class AppComponent implements OnInit {
       2, // OPTIONAL - retry count
       1000, // OTIONAL - retry delay
     )).subscribe();
+
+    this.http.get<Post>(this.apiUrl + '/1').pipe(handle(
+      (response) => {
+        console.log(response)
+      }
+    )).subscribe();
+
+    this.http.get<Post>(this.apiUrl).pipe(delay(3000),handle(
+      (response) => {
+        console.log(response)
+      }
+    )).subscribe();
+
+
+    
   }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
 }

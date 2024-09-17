@@ -1,19 +1,28 @@
 import { HttpErrorResponse } from "@angular/common/http";
-import { catchError, finalize, Observable, of, retry, tap } from "rxjs";
+import { BehaviorSubject, catchError, finalize, Observable, of, retry, tap } from "rxjs";
+
+export interface IHandlerConfig {
+  defaultRetryCount?: number;
+  defaultRetryDelay?: number;
+  defaultErrorHandler?: (error: HttpErrorResponse) => void;
+} 
 
 let defaultErrorHandler: ((error: HttpErrorResponse) => void) | undefined;
-export function setDefaultErrorHandler(handler: (error: HttpErrorResponse) => void) {
-  defaultErrorHandler = handler;
+let defaultRetryCount = 0;
+let defaultRetryDelay = 0;
+export function configureHandler(config: IHandlerConfig) {
+  defaultErrorHandler = config.defaultErrorHandler;
+  defaultRetryCount = config.defaultRetryCount ?? 0;
+  defaultRetryDelay = config.defaultRetryDelay ?? 0;
 }
 
-let defaultRetryCount: number = 0;
-export function setDefaultRetryCount(count: number) {
-  defaultRetryCount = count;
-}
 
-let defaultRetryDelay: number = 0;
-export function setDefaultRetryDelay(delay: number) {
-  defaultRetryDelay = delay;
+let requestCount = 0;
+let requestsSubject = new BehaviorSubject<number>(0);
+let requests$ = requestsSubject.asObservable();
+
+export function pendingRequestsCount(): Observable<number> {
+  return requests$;
 }
 
 export function handle<T>(
@@ -25,6 +34,8 @@ export function handle<T>(
     retryDelay: number = defaultRetryDelay,
   ): (source$: Observable<T>) => Observable<T> {
     return (source$: Observable<T>) => {
+      requestCount++;
+      requestsSubject.next(requestCount);
       if(loadingSetter){
         loadingSetter(true);
       }
@@ -38,7 +49,7 @@ export function handle<T>(
 
         tap((data: T) => dataSetter(data)),
 
-        catchError((error: HttpErrorResponse, caught: Observable<T>) => {
+        catchError((error: HttpErrorResponse) => {
           if (errorHandler) {
             errorHandler(error);
           } else if (defaultErrorHandler) {
@@ -53,6 +64,9 @@ export function handle<T>(
         }),
 
         finalize(() => {
+          requestCount--;
+          requestCount = requestCount < 0 ? 0 : requestCount;
+          requestsSubject.next(requestCount);
           if(loadingSetter){
             loadingSetter(false);
           }

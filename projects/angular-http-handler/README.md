@@ -11,7 +11,8 @@ Supported Angular versions: 15, 16, 17, 18.
 - Handles errors with an optional error handler
 - Supports retry logic for failed requests
 - Provides a fallback value when the request fails
-- Can return empty arrays or null based on the response type
+- Provides a global loading indicator
+- Provides a global request count
 
 ## Installation
 
@@ -20,6 +21,7 @@ To install the library, run the following command:
 ```bash
 npm install angular-http-handler
 ```
+
 
 ## Usage
 
@@ -65,9 +67,7 @@ export class AppComponent implements OnInit {
 }
 ```
 
-
-## API
-
+### API
 The `handle` function manages HTTP requests with loading state, error handling and retry.
 Parameters:
 
@@ -93,12 +93,15 @@ Delay between retries in milliseconds.
 An Observable<T> that handles the request, error, retry.
 
 
-The `setDefaultErrorHandler` set default error handler for every handler request. In case custom error handler is passed as a parameter to handle function it will overwrite the default one.
-Use it on root component on init method:
+## Configuration (Optional)
+
+If you want to define custom default parameters you should do it in your root component before any http call.
+- The `defaultErrorHandler` set default error handler for every request wrapped by handler. In case custom error handler is passed as a parameter to handle function it will overwrite the default one.
+- The `defaultRetryCount` and `defaultRetryDelay` set default number of retry in case of error and time between the calls.
 ```typescript
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { setDefaultErrorHandler } from 'angular-http-handler';
+import { defaultErrorHandler } from 'angular-http-handler';
 
 @Component({
   selector: 'app-root',
@@ -106,37 +109,52 @@ import { setDefaultErrorHandler } from 'angular-http-handler';
   styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
+
   ngOnInit(): void {
-    setDefaultErrorHandler((error: HttpErrorResponse) => {
-      console.log('deafult handler', error);
-      customErrorHandlerFuction(error);
+
+    configureHandler({
+      defaultErrorHandler: (error: HttpErrorResponse) => {
+        console.log('deafult handler', error);
+      },
+      defaultRetryCount: 0,
+      defaultRetryDelay: 0
     });
   }
 }
 ```
 
+### Fallback Response Behavior
 
-The `defaultRetryCount` and `setDefaultRetryDelay` set default number of retry in case of error and time between the calls. If you pass it as a parameter it will overwrite the default value.
-Use it on root component on init method:
+The `handle` function returns a fallback response in case you define it as a 3rd parameter. In case you do not define it it will remain undefined and it will not trigger dataSetter function. 
+
+## Aditional Options
+
+### `pendingRequestsCount()`
+This function returns an Observable<number> that emits the total number of pending requests. It helps track how many requests wrapped by handler are still in progress.
 ```typescript
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
-import { setDefaultRetryCount, setDefaultRetryDelay } from 'angular-http-handler';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { pendingRequestsCount } from 'angular-http-handler';
+import { Subscription } from 'rxjs';
+
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, OnDestroy {
+
+  subs = new Subscription;
+
   ngOnInit(): void {
-    setDefaultRetryCount(2);
-    setDefaultRetryDelay(500);
+
+    this.subs = pendingRequestsCount().subscribe(count => {
+      console.log('Pending request count: ', count);
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 }
 ```
-
-
-## Fallback Response Behavior
-
-The `handle` function returns a fallback response in case you define it as a 3rd parameter. In case you do not define it it will remain undefined and it will not trigger dataSetter function. 
