@@ -3,7 +3,7 @@
 ## Introduction
 
 An Angular library for handling HTTP requests with loading state management, error handling, retry logic, and fallback values.
-Supported Angular versions: 15, 16, 17, 18.
+Supported Angular versions: 15, 16, 17, 18, 19.
 
 ## Features
 
@@ -41,7 +41,7 @@ export class AppComponent implements OnInit {
   private apiUrl = 'YOUR API URL';
   http = inject(HttpClient);
 
-  loading = false;
+  loading = signal(false);
   response: any[] = [];
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class AppComponent implements OnInit {
           console.log(response);
         },
         (loading) => { // OPTIONAL - loading indicator
-          this.loading = loading;
+          this.loading.set(loading);
           console.log(loading);
         },
         [], // OPTIONAL - custom fallback value
@@ -101,7 +101,7 @@ If you want to define custom default parameters you should do it in your root co
 ```typescript
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { defaultErrorHandler } from 'angular-http-handler';
+import { configureHandler } from 'angular-http-handler';
 
 @Component({
   selector: 'app-root',
